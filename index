@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technology Quiz</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #2d3748;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s ease;
+        }
+        .question {
+            font-size: 22px;
+            color: #2d3748;
+            margin: 30px 0;
+            font-weight: 600;
+        }
+        .option {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin: 12px 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .option:hover:not(.correct):not(.wrong):not(:disabled) {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+        .option.correct {
+            border-color: #48bb78;
+            background: #f0fff4;
+            color: #22543d;
+        }
+        .option.wrong {
+            border-color: #f56565;
+            background: #fff5f5;
+            color: #742a2a;
+        }
+        .option:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .feedback {
+            margin: 20px 0;
+            padding: 20px;
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            border-radius: 8px;
+            display: none;
+        }
+        .feedback.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .feedback strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3748;
+        }
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        .score {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #edf2f7;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+        .result-screen.show {
+            display: block;
+        }
+        .result-score {
+            font-size: 72px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 20px 0;
+        }
+        .result-message {
+            font-size: 24px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+        .question-review {
+            display: inline-block;
+            margin: 8px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .review-correct {
+            background: #f0fff4;
+            color: #22543d;
+            border: 2px solid #48bb78;
+        }
+        .review-wrong {
+            background: #fff5f5;
+            color: #742a2a;
+            border: 2px solid #f56565;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="quiz-screen">
+            <div class="header">
+                <h1>Technology Quiz</h1>
+                <span class="score" id="questionNum">Question 1/5</span>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            
+            <div class="question" id="question"></div>
+            
+            <div id="options"></div>
+            
+            <div class="feedback" id="feedback">
+                <strong id="feedbackTitle"></strong>
+                <p id="feedbackText"></p>
+            </div>
+            
+            <div class="nav-buttons">
+                <span class="score" id="scoreDisplay">Score: 0/0</span>
+                <button class="btn btn-primary" id="nextBtn" style="display:none;">Next Question →</button>
+            </div>
+        </div>
+        
+        <div class="result-screen" id="resultScreen">
+            <h1>Quiz Complete! 🎉</h1>
+            <div class="result-score" id="finalScore"></div>
+            <div class="result-message" id="resultMessage"></div>
+            <div id="reviewContainer" style="margin: 30px 0;"></div>
+            <button class="btn btn-primary" onclick="restartQuiz()">🔄 Retake Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "What does 'HTTP' stand for in web addresses?",
+                options: ["HyperText Transfer Protocol", "High Technology Transfer Process", "Hyperlink Text Transmission Protocol", "Home Tool Transfer Protocol"],
+                correct: 0,
+                explanation: "HTTP stands for HyperText Transfer Protocol. It's the foundation of data communication on the World Wide Web."
+            },
+            {
+                question: "Which of these is NOT a programming language?",
+                options: ["Python", "JavaScript", "Photoshop", "Ruby"],
+                correct: 2,
+                explanation: "Photoshop is image editing software made by Adobe, not a programming language. Python, JavaScript, and Ruby are all programming languages."
+            },
+            {
+                question: "What does 'RAM' stand for in computer hardware?",
+                options: ["Random Access Memory", "Rapid Application Module", "Read And Modify", "Remote Access Machine"],
+                correct: 0,
+                explanation: "RAM stands for Random Access Memory. It's the computer's short-term memory for quick data access."
+            },
+            {
+                question: "Which company developed the Android operating system?",
+                options: ["Apple", "Microsoft", "Google", "Samsung"],
+                correct: 2,
+                explanation: "Google acquired Android Inc. in 2005 and developed it into the mobile operating system we know today."
+            },
+            {
+                question: "What is the primary purpose of a firewall in computer security?",
+                options: ["To speed up internet connection", "To block unauthorized access while permitting authorized communications", "To store backup files", "To compress data files"],
+                correct: 1,
+                explanation: "A firewall acts as a barrier between trusted and untrusted networks, monitoring and controlling network traffic."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = [];
+
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('question').textContent = q.question;
+            document.getElementById('questionNum').textContent = `Question ${currentQuestion + 1}/${questions.length}`;
+            document.getElementById('progressBar').style.width = ((currentQuestion + 1) / questions.length * 100) + '%';
+            document.getElementById('scoreDisplay').textContent = `Score: ${score}/${answered.length}`;
+            
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            
+            q.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option';
+                btn.textContent = option;
+                btn.onclick = () => selectAnswer(index);
+                optionsDiv.appendChild(btn);
+            });
+            
+            document.getElementById('feedback').classList.remove('show');
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+
+        function selectAnswer(selected) {
+            const q = questions[currentQuestion];
+            const options = document.querySelectorAll('.option');
+            
+            options.forEach((opt, index) => {
+                opt.disabled = true;
+                if (index === q.correct) {
+                    opt.classList.add('correct');
+                }
+                if (index === selected && index !== q.correct) {
+                    opt.classList.add('wrong');
+                }
+            });
+            
+            const isCorrect = selected === q.correct;
+            if (isCorrect) score++;
+            answered.push(isCorrect);
+            
+            document.getElementById('feedbackTitle').textContent = isCorrect ? '✓ Correct!' : '✗ Incorrect';
+            document.getElementById('feedbackText').textContent = q.explanation;
+            document.getElementById('feedback').classList.add('show');
+            document.getElementById('scoreDisplay').textContent = `Score: ${score}/${answered.length}`;
+            document.getElementById('nextBtn').style.display = 'inline-block';
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('resultScreen').classList.add('show');
+            
+            const percentage = (score / questions.length * 100);
+            document.getElementById('finalScore').textContent = `${score}/${questions.length}`;
+            
+            let message = '';
+            if (percentage === 100) message = 'Perfect score! You\'re a tech expert! 🎉';
+            else if (percentage >= 80) message = 'Great job! You really know your technology! 🌟';
+            else if (percentage >= 60) message = 'Good work! Keep learning! 👍';
+            else message = 'Keep practicing! Technology is always evolving! 💪';
+            
+            document.getElementById('resultMessage').textContent = message;
+            
+            const reviewDiv = document.getElementById('reviewContainer');
+            reviewDiv.innerHTML = '';
+            answered.forEach((correct, index) => {
+                const badge = document.createElement('span');
+                badge.className = `question-review ${correct ? 'review-correct' : 'review-wrong'}`;
+                badge.textContent = `Question ${index + 1}: ${correct ? '✓' : '✗'}`;
+                reviewDiv.appendChild(badge);
+            });
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            answered = [];
+            document.getElementById('quiz-screen').style.display = 'block';
+            document.getElementById('resultScreen').classList.remove('show');
+            loadQuestion();
+        }
+
+        document.getElementById('nextBtn').onclick = nextQuestion;
+        loadQuestion();
+    </script>
+</body>
+</html>
