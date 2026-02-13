@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technology Quiz</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        
+        /* Responsive padding */
+        @media (max-width: 600px) {
+            .container { padding: 1.5rem; border-radius: 12px; }
+            body { padding: 0.5rem; }
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 700;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #edf2f7;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #4a5568;
+            white-space: nowrap;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 10px;
+        }
+        
+        .question {
+            font-size: clamp(1.125rem, 3vw, 1.375rem);
+            color: #2d3748;
+            margin: 1.5rem 0;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .option {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-size: 1rem;
+            text-align: left;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option:hover:not(.correct):not(.wrong):not(:disabled) {
+            border-color: #667eea;
+            background: #f7fafc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        
+        .option:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        .option.correct {
+            border-color: #48bb78;
+            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+            color: #22543d;
+            animation: successPulse 0.5s ease;
+        }
+        
+        .option.wrong {
+            border-color: #f56565;
+            background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+            color: #742a2a;
+            animation: shake 0.4s ease;
+        }
+        
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .option:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .feedback {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+            border-left: 4px solid #4299e1;
+            border-radius: 8px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .feedback.show { display: block; }
+        
+        .feedback strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+            font-size: 1.125rem;
+        }
+        
+        .feedback p {
+            color: #4a5568;
+            line-height: 1.6;
+            font-size: 0.9375rem;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        /* Results Screen */
+        .result-screen {
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .result-screen.show { display: block; }
+        
+        .trophy {
+            font-size: 5rem;
+            margin: 1rem 0;
+            animation: bounce 1s ease infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .result-score {
+            font-size: clamp(3rem, 10vw, 4.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 1rem 0;
+        }
+        
+        .result-message {
+            font-size: clamp(1.25rem, 4vw, 1.5rem);
+            margin: 1.5rem 0;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .review-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+            margin: 2rem 0;
+        }
+        
+        .question-review {
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .review-correct {
+            background: #f0fff4;
+            color: #22543d;
+            border: 2px solid #48bb78;
+        }
+        
+        .review-wrong {
+            background: #fff5f5;
+            color: #742a2a;
+            border: 2px solid #f56565;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 600px) {
+            .option { padding: 0.875rem; font-size: 0.9375rem; }
+            .btn { padding: 0.75rem 1.5rem; font-size: 0.9375rem; }
+            .trophy { font-size: 4rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="quiz-screen">
+            <div class="header">
+                <h1>💻 Tech Quiz</h1>
+                <span class="badge" id="questionNum">Question 1/5</span>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 20%"></div>
+            </div>
+            
+            <div class="question" id="question"></div>
+            
+            <div class="options" id="options"></div>
+            
+            <div class="feedback" id="feedback">
+                <strong id="feedbackTitle"></strong>
+                <p id="feedbackText"></p>
+            </div>
+            
+            <div class="nav-buttons">
+                <span class="badge" id="scoreDisplay">Score: 0/0</span>
+                <button class="btn btn-primary" id="nextBtn" style="display:none;">Next Question →</button>
+            </div>
+        </div>
+        
+        <div class="result-screen" id="resultScreen">
+            <div class="trophy">🏆</div>
+            <h1>Quiz Complete!</h1>
+            <div class="result-score" id="finalScore"></div>
+            <div class="result-message" id="resultMessage"></div>
+            <div class="review-container" id="reviewContainer"></div>
+            <button class="btn btn-primary" onclick="restartQuiz()">🔄 Retake Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "What does 'HTTP' stand for in web addresses?",
+                options: ["HyperText Transfer Protocol", "High Technology Transfer Process", "Hyperlink Text Transmission Protocol", "Home Tool Transfer Protocol"],
+                correct: 0,
+                explanation: "HTTP stands for HyperText Transfer Protocol. It's the foundation of data communication on the World Wide Web."
+            },
+            {
+                question: "Which of these is NOT a programming language?",
+                options: ["Python", "JavaScript", "Photoshop", "Ruby"],
+                correct: 2,
+                explanation: "Photoshop is image editing software made by Adobe, not a programming language. Python, JavaScript, and Ruby are all programming languages."
+            },
+            {
+                question: "What does 'RAM' stand for in computer hardware?",
+                options: ["Random Access Memory", "Rapid Application Module", "Read And Modify", "Remote Access Machine"],
+                correct: 0,
+                explanation: "RAM stands for Random Access Memory. It's the computer's short-term memory for quick data access."
+            },
+            {
+                question: "Which company developed the Android operating system?",
+                options: ["Apple", "Microsoft", "Google", "Samsung"],
+                correct: 2,
+                explanation: "Google acquired Android Inc. in 2005 and developed it into the mobile operating system we know today."
+            },
+            {
+                question: "What is the primary purpose of a firewall in computer security?",
+                options: ["To speed up internet connection", "To block unauthorized access while permitting authorized communications", "To store backup files", "To compress data files"],
+                correct: 1,
+                explanation: "A firewall acts as a barrier between trusted and untrusted networks, monitoring and controlling network traffic."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = [];
+
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('question').textContent = q.question;
+            document.getElementById('questionNum').textContent = `Question ${currentQuestion + 1}/${questions.length}`;
+            document.getElementById('progressBar').style.width = ((currentQuestion + 1) / questions.length * 100) + '%';
+            document.getElementById('scoreDisplay').textContent = `Score: ${score}/${answered.length}`;
+            
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            
+            q.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option';
+                btn.textContent = option;
+                btn.onclick = () => selectAnswer(index);
+                optionsDiv.appendChild(btn);
+            });
+            
+            document.getElementById('feedback').classList.remove('show');
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+
+        function selectAnswer(selected) {
+            const q = questions[currentQuestion];
+            const options = document.querySelectorAll('.option');
+            
+            options.forEach((opt, index) => {
+                opt.disabled = true;
+                if (index === q.correct) {
+                    opt.classList.add('correct');
+                }
+                if (index === selected && index !== q.correct) {
+                    opt.classList.add('wrong');
+                }
+            });
+            
+            const isCorrect = selected === q.correct;
+            if (isCorrect) score++;
+            answered.push(isCorrect);
+            
+            document.getElementById('feedbackTitle').textContent = isCorrect ? '✓ Correct!' : '✗ Incorrect';
+            document.getElementById('feedbackText').textContent = q.explanation;
+            document.getElementById('feedback').classList.add('show');
+            document.getElementById('scoreDisplay').textContent = `Score: ${score}/${answered.length}`;
+            document.getElementById('nextBtn').style.display = 'inline-block';
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('resultScreen').classList.add('show');
+            
+            const percentage = (score / questions.length * 100);
+            document.getElementById('finalScore').textContent = `${score}/${questions.length}`;
+            
+            let message = '';
+            if (percentage === 100) message = 'Perfect score! You\'re a tech expert! 🎉';
+            else if (percentage >= 80) message = 'Great job! You really know your technology! 🌟';
+            else if (percentage >= 60) message = 'Good work! Keep learning! 👍';
+            else message = 'Keep practicing! Technology is always evolving! 💪';
+            
+            document.getElementById('resultMessage').textContent = message;
+            
+            const reviewDiv = document.getElementById('reviewContainer');
+            reviewDiv.innerHTML = '';
+            answered.forEach((correct, index) => {
+                const badge = document.createElement('span');
+                badge.className = `question-review ${correct ? 'review-correct' : 'review-wrong'}`;
+                badge.textContent = `Q${index + 1}: ${correct ? '✓' : '✗'}`;
+                reviewDiv.appendChild(badge);
+            });
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            answered = [];
+            document.getElementById('quiz-screen').style.display = 'block';
+            document.getElementById('resultScreen').classList.remove('show');
+            loadQuestion();
+        }
+
+        document.getElementById('nextBtn').onclick = nextQuestion;
+        loadQuestion();
+    </script>
+</body>
+</html>
